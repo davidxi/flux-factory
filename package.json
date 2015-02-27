@@ -1,0 +1,47 @@
+{
+  "name": "flux-factory",
+  "version": "0.0.1",
+  "description": "Flux Action/Constant/Dispatcher/Store Factory",
+  "homepage": "http://davidxi.github.io/flux-factory/",
+  "bugs": {
+    "url": "https://github.com/davidxi/flux-factory/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/davidxi/flux-factory.git"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "browserify": "^5.9.1",
+    "gulp": "~3.5.2",
+    "gulp-concat": "~2.2.0",
+    "gulp-if": "~1.2.4",
+    "gulp-jshint": "1.8.5",
+    "gulp-rename": "1.2.0",
+    "gulp-rimraf": "0.0.9",
+    "gulp-tap": "0.1.1",
+    "gulp-uglify": "~1.0.1",
+    "gulp-util": "~2.2.14",
+    "jest-cli": "^0.2.1",
+    "jshint-stylish": "1.0.0",
+    "run-sequence": "^0.3.6",
+    "streamqueue": "0.0.4",
+    "through": "2.3.4",
+    "vinyl-source-stream": "^0.1.1"
+  },
+  "scripts": {
+    "test": "jest --i"
+  },
+  "dependencies": {
+    "envify": "latest",
+    "flux": "^2.0.1",
+    "invariant": "^2.0.0",
+    "keymirror": "^0.1.1",
+    "object-assign": "^2.0.0"
+  },
+  "main": "index.js",
+  "author": "",
+  "keywords": [
+    "flux"
+  ]
+}
