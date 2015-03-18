@@ -48,21 +48,19 @@ function makeStore(config, cacheId) {
         // value instead of key
         actionType = constantAssociated.ActionTypes[actionType];
         // tail recursion
-        onDispatcherPayload = utils.after(function(expectedType, action) {
+        onDispatcherPayload = utils.after(onDispatcherPayload, function(expectedType, payload) {
+            var action = payload.action;
             if (action.type === expectedType) {
-                Store[setterMethodName](action);
+                var actionCloned = assign({}, action);
+                delete(actionCloned.type);
+                Store[setterMethodName](actionCloned);
             }
+            return payload.action;
         }.bind(Store, actionType));
     });
     Store.dispatchToken = dispatcherAssociated.register(onDispatcherPayload);
 
-
-    Object.keys(Store).forEach(function(propName) {
-        var prop = Store[propName];
-        if (typeof prop === "function") {
-            Store[propName] = prop.bind(Store);
-        }
-    });
+    utils.bindAll(Store);
 
     cache[cacheId] = Store;
     return cache[cacheId];
@@ -72,7 +70,7 @@ makeStore.getInstance = function(cacheId) {
     return cache[cacheId];
 };
 makeStore.destructor = function() {
-    cache = null;
+    cache = {};
 };
 
 module.exports = makeStore;

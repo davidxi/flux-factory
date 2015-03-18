@@ -16,10 +16,10 @@ function makeConstant(config, cacheId) {
     var setterMethods = {};
 
     Object.keys(config).forEach(function(_key) {
-        var key = normalize(_key);
+        var key = String(_key);
 
-        invariant(key.indexOf('_') === 0, 'Data source key can not start with \'_\'');
-        invariant(key.indexOf('UPDATE') === 0, 'Data source key can not start with \'UPDATE\'');
+        invariant(key.indexOf('_') !== 0, 'Data source key can not start with \'_\' (key: %s)', key);
+        invariant(key.indexOf('UPDATE') !== 0, 'Data source key can not start with \'UPDATE\' (key: %s)', key);
 
         dataSources[utils.getStoreFieldKey(key)] = null;
         setterMethods[utils.getActionTypeKey(key)] = null;
@@ -36,7 +36,7 @@ makeConstant.getInstance = function(cacheId) {
     return cache[cacheId];
 };
 makeConstant.destructor = function() {
-    cache = null;
+    cache = {};
 };
 
 module.exports = makeConstant;

@@ -21,9 +21,10 @@ var factory = {
             });
             return;
         }
+        invariant(typeof namespace === 'string', 'format check');
         invariant(config && (typeof config === 'object'), 'format check');
 
-        ['makeAction', 'makeConstant', 'makeDispatcher', 'makeStore'].forEach(function(klass) {
+        [makeAction, makeConstant, makeDispatcher, makeStore].forEach(function(klass) {
             klass(config, namespace);
         });
     },
@@ -46,7 +47,7 @@ var factory = {
      * tear down
      */
     destructor: function() {
-        ['makeAction', 'makeConstant', 'makeDispatcher', 'makeStore'].forEach(function(klass) {
+        [makeAction, makeConstant, makeDispatcher, makeStore].forEach(function(klass) {
             klass.destructor();
         });
     }

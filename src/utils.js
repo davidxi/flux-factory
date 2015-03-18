@@ -4,11 +4,14 @@
 module.exports = {
     // SEARCH_TEXT -> SEARCH_TEXT  (Store variable)
     getStoreFieldKey: function(configKey) {
-        return configKey.toUpperCase();
+        var str = hyphenate(configKey);
+        str = str.toUpperCase();
+        str = str.replace(/-/g, '_');
+        return str;
     },
     // SEARCH_TEXT -> UPDATE_SEARCH_TEXT  (Constant::ActionType)
     getActionTypeKey: function(configKey) {
-        return 'UPDATE_' + this.getStoreFieldKey(getActionMethodKey);
+        return 'UPDATE_' + this.getStoreFieldKey(configKey);
     },
     // SEARCH_TEXT -> updateSearchText (Action method, Store method)
     getSetterMethodName: function(configKey) {
@@ -44,6 +47,14 @@ module.exports = {
             var args = Array.prototype.slice.call(arguments);
             return fn.apply(self, [base.apply(self, args)].concat(args));
         };
+    },
+    bindAll: function(obj) {
+        Object.keys(obj).forEach(function(propName) {
+            var prop = obj[propName];
+            if (typeof prop === "function") {
+                obj[propName] = prop.bind(obj);
+            }
+        });
     }
 };
 

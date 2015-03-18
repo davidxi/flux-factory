@@ -57,7 +57,7 @@ makeAction.getInstance = function(cacheId) {
     return cache[cacheId];
 };
 makeAction.destructor = function() {
-    cache = null;
+    cache = {};
 };
 
 module.exports = makeAction;

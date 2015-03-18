@@ -1,6 +1,6 @@
 {
   "name": "flux-factory",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Flux Action/Constant/Dispatcher/Store Factory",
   "homepage": "http://davidxi.github.io/flux-factory/",
   "bugs": {
@@ -30,6 +30,7 @@
     "vinyl-source-stream": "^0.1.1"
   },
   "scripts": {
+    "pretest": "node ./node_modules/gulp/bin/gulp.js browserify",
     "test": "jest --i"
   },
   "dependencies": {

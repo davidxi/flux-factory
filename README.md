@@ -1,3 +1,5 @@
+[![npm](https://img.shields.io/badge/npm-0.0.2-blue.svg)]()
+
 # flux-factory
 
 A Flux pattern wrapper to let you write <b>less</b> Flux structure code.
@@ -41,14 +43,14 @@ var allDataFields = {
 
 var fluxEntityName = 'UserProfile';
 
-fluxFactory(allDataFields, fluxEntityName);
+fluxFactory(fluxEntityName, allDataFields);
 ```
 
 Now, what did `flux-factory` do in the underhood?
 
 <b>(1) First</b>, it automatically creates a constant object as formatted below:
 
-```json
+```js
 /* constant object auto generated */
 constant = {
   DataFields: {
@@ -79,7 +81,7 @@ store = assign(new EventEmitter, {
 	updateBirthday: {year, month, day} => noop,
 	updateGender: {gender} => noop,
 	....
-	
+
 	dispatchToken = payload => {
 	  if (payload.action.type ===
 	  	  constant.actionType.UPDATE_PROFILE_NAME) {
@@ -89,7 +91,7 @@ store = assign(new EventEmitter, {
 	  	  constant.actionType.UPDATE_BIRTHDAY) {
 	  	  store.updateBirthday(payload.data)
 	  }
-	  ...	  
+	  ...
 	}
 })
 
@@ -117,7 +119,7 @@ And how to extend those generated action/constant/dispatcher/store object?
 
 ```js
 
-fluxFactory({config mapping}, 'UserProfile'})
+fluxFactory('UserProfile', {config mapping})
 
 var action = fluxFactory.useAction('UserProfile');
 var constant = fluxFactory.useConstant('UserProfile');

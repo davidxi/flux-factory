@@ -4,6 +4,7 @@
 var assign = require('object-assign');
 var keyMirror = require('keymirror');
 var Dispatcher = require('flux').Dispatcher;
+var utils = require('./utils');
 
 var cache = {};
 
@@ -24,6 +25,7 @@ function makeDispatcher(config, cacheId) {
         handleServerAction: curryPayloadSource(makeDispatcher.PayloadSources.SERVER_ACTION),
         handleViewAction: curryPayloadSource(makeDispatcher.PayloadSources.VIEW_ACTION)
     });
+    utils.bindAll(cache[cacheId]);
     return cache[cacheId];
 }
 
@@ -36,7 +38,7 @@ makeDispatcher.getInstance = function(cacheId) {
     return cache[cacheId];
 };
 makeDispatcher.destructor = function() {
-    cache = null;
+    cache = {};
 };
 
 module.exports = makeDispatcher;
