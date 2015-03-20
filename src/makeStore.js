@@ -2,6 +2,7 @@
  * @providesModule makeStore
  */
 var assign = require('object-assign');
+var Immutable = require('immutable');
 var EventEmitter = require('events').EventEmitter;
 
 var makeConstant = require('./makeConstant');
@@ -19,8 +20,8 @@ function makeStore(config, cacheId) {
     }
 
     var Store = assign({}, EventEmitter.prototype, {
-        emitChange: function() {
-            this.emit(CHANGE_EVENT);
+        emitChange: function(field, memo) {
+            this.emit(CHANGE_EVENT, memo);
         },
         addChangeListener: function(listener) {
             this.on(CHANGE_EVENT, listener);
@@ -33,10 +34,35 @@ function makeStore(config, cacheId) {
     var constantAssociated = makeConstant(config, cacheId);
     var dispatcherAssociated = makeDispatcher(config, cacheId);
 
+    Store._dataFields = {};
+
     Object.keys(config).forEach(function(_key) {
+        Store._dataFields[_key] = Immutable.fromJS({});
         var setterMethodName = utils.getSetterMethodName(_key);
-        Store[setterMethodName] = emptyFunc;
+        Store[setterMethodName] = setterFuncFactory(_key);
+        var getterMethodName = utils.getGetterMethodName(_key);
+        Store[getterMethodName] = getterFuncFactory(_key);
     });
+
+    function getterFuncFactory(field) {
+        return function() {
+            return assign({}, Store._dataFields[field].toJSON());
+        };
+    }
+    function setterFuncFactory(field) {
+        return function(data) {
+            var current = Store._dataFields[field];
+            var next = current.mergeDeep(Immutable.fromJS(data, function (key, value) {
+                var isIndexed = Immutable.Iterable.isIndexed(value);
+                return isIndexed ? value.toList() : value.toOrderedMap();
+            }));
+            var isDirty = (next !== current);
+            if (isDirty) {
+                Store._dataFields[field] = next;
+                Store.emitChange(field, data);
+            }
+        };
+    }
 
     var onDispatcherPayload = function(payload) {
         return payload.action;
@@ -58,6 +84,12 @@ function makeStore(config, cacheId) {
             return payload.action;
         }.bind(Store, actionType));
     });
+    // give user a chance to touch inside this dispatcher handler
+    Store.onDispatcherPayload = emptyFunc;
+    onDispatcherPayload = utils.after(onDispatcherPayload, function(a, b, c) {
+        Store.onDispatcherPayload(a, b, c);
+    });
+
     Store.dispatchToken = dispatcherAssociated.register(onDispatcherPayload);
 
     utils.bindAll(Store);

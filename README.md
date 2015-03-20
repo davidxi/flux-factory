@@ -1,4 +1,4 @@
-[![npm](https://img.shields.io/badge/npm-0.0.2-blue.svg)]()
+[![npm](https://img.shields.io/badge/npm-0.0.3-blue.svg)]()
 
 # flux-factory
 
@@ -44,6 +44,20 @@ var allDataFields = {
 var fluxEntityName = 'UserProfile';
 
 fluxFactory(fluxEntityName, allDataFields);
+
+// now let's try call an action, and listen to the change event from store.
+
+var Action = fluxFactory.useAction(fluxEntityName);
+var Store = fluxFactory.useStore(fluxEntityName);
+
+Store.addChangeListener(function() {
+    // usually, you can put this function in your react component
+    console.log(Store.getBirthday());
+});
+
+// the action setter arguments list format is as defined in 'allDataFields'
+Action.updateBirthday('yyyy', 'mm', 'dddd');
+
 ```
 
 Now, what did `flux-factory` do in the underhood?
@@ -71,15 +85,26 @@ constant = {
 <b>(2) Then</b>, it automatically creates a dispatcher object, whose methods looks exactly like flux examples sample code.
 > By concept, since the dispatcher is used as a bridge between action module and store module, in most cases, you don't need to modify/extend this generated object.
 
-<b>(3) Then</b>, it automatically creates a store object, which inherits from `EventEmitter` obejct (same as in flux sample code). Event subscribe/unsubscribe functions are also bound. Also, it has following properties created:
+<b>(3) Then</b>, it automatically creates a store object, which inherits from `EventEmitter` obejct (same as in flux sample code). Event subscribe/unsubscribe functions are also bound. It also implements getters and setters, and has the following properties created:
 
 ```js
 /* store object auto generated */
 store = assign(new EventEmitter, {
 
-	updateProfileName: {name} => noop,
-	updateBirthday: {year, month, day} => noop,
-	updateGender: {gender} => noop,
+	// invoked when data changes, if you didn't overwrite default setters
+	emitchange: {field_key},
+	addChangeListener: {handler},
+
+	// getters
+	getProfileName => {name},
+	getBirthday => {year, month, day},
+	getGender => {gender},
+	....
+
+	// setters
+	updateProfileName: {name},
+	updateBirthday: {year, month, day},
+	updateGender: {gender},
 	....
 
 	dispatchToken = payload => {
@@ -92,7 +117,9 @@ store = assign(new EventEmitter, {
 	  	  store.updateBirthday(payload.data)
 	  }
 	  ...
-	}
+	  this.onDispatcherPayload(payload);
+	},
+	onDispatcherPayload => (empty func) // overwrite if you need
 })
 
 ```

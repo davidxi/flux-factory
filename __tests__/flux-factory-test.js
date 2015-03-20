@@ -113,11 +113,11 @@ describe('test make action', function() {
         Factory.make(fluxEntityName, allDataFields);
         var Action = Factory.useAction(fluxEntityName);
 
-        expect(typeof Action.updateProfileName).toBe('function');
-        expect(typeof Action.updateBirthday).toBe('function');
-        expect(typeof Action.updateGender).toBe('function');
-        expect(typeof Action.updateHometown).toBe('function');
-        expect(typeof Action.updateRelationship).toBe('function');
+        expect(Action.updateProfileName).toEqual(jasmine.any(Function));
+        expect(Action.updateBirthday).toEqual(jasmine.any(Function));
+        expect(Action.updateGender).toEqual(jasmine.any(Function));
+        expect(Action.updateHometown).toEqual(jasmine.any(Function));
+        expect(Action.updateRelationship).toEqual(jasmine.any(Function));
     });
 
     it('assert values passed to dispatcher', function() {
@@ -152,7 +152,7 @@ describe('test dispatcher', function() {
 
         Dispatcher.dispatch = jest.genMockFunction(); // flux dispatcher native method
 
-        expect(typeof Dispatcher.handleViewAction).toBe('function');
+        expect(Dispatcher.handleViewAction).toEqual(jasmine.any(Function));
         var memo = {
             year: 'yy',
             month: 'mm',
@@ -182,14 +182,15 @@ describe('test pipeline', function() {
         var Dispatcher = Factory.useDispatcher(fluxEntityName);
         var Store = Factory.useStore(fluxEntityName);
 
-        expect(typeof Store.updateBirthday).toBe('function');
+        expect(Store.updateBirthday).toEqual(jasmine.any(Function));
 
         Store.updateBirthday = jest.genMockFunction();
         Store.updateRelationship = jest.genMockFunction();
+        Store.onDispatcherPayload = jest.genMockFunction();
 
         Action.updateBirthday('yy', 'mm', 'dd');
 
-        var call = Store.updateBirthday.mock.calls[0];
+        var call = Store.updateBirthday.mock.calls.shift();
         expect(call[0]).toEqual({
             year: 'yy',
             month: 'mm',
@@ -197,5 +198,53 @@ describe('test pipeline', function() {
         });
         expect(call[1]).toBeUndefined();
         expect(Store.updateRelationship.mock.calls[0]).toBeUndefined();
+        call = Store.onDispatcherPayload.mock.calls.shift();
+        expect(call[0]).toEqual(jasmine.any(Object));
+        expect(call[0].action).toEqual(jasmine.any(Object));
+
+        // unregister dispatcher
+        expect(Store.dispatchToken).toEqual(jasmine.any(String));
+        Dispatcher.unregister(Store.dispatchToken);
+        Action.updateBirthday('yy', 'mm', 'dd');
+        expect(Store.updateBirthday.mock.calls.shift()).toBeUndefined();
+    });
+
+    it('store getter/setter', function() {
+        Factory.make(fluxEntityName, allDataFields);
+        var Action = Factory.useAction(fluxEntityName);
+        var Dispatcher = Factory.useDispatcher(fluxEntityName);
+        var Store = Factory.useStore(fluxEntityName);
+
+        Store.emitChange = jest.genMockFunction();
+
+        // setter emits change
+        Action.updateBirthday('yy', 'mm', 'dd');
+        var expectedData = {
+            year: 'yy',
+            month: 'mm',
+            day: 'dd'
+        };
+        var call = Store.emitChange.mock.calls.shift();
+        expect(call[0]).toEqual('birthday'); // field key
+        expect(call[1]).toEqual(expectedData);
+        expect(Store.getBirthday()).toEqual(expectedData);
+
+        // set same data, should not emits change
+        Action.updateBirthday('yy', 'mm', 'dd');
+        call = Store.emitChange.mock.calls.shift();
+        expect(call).toBeUndefined();
+        expect(Store.getBirthday()).toEqual(expectedData);
+
+        // set different data
+        Action.updateBirthday('yy-1', 'mm-1', 'dd-1');
+        expectedData = {
+            year: 'yy-1',
+            month: 'mm-1',
+            day: 'dd-1'
+        };
+        call = Store.emitChange.mock.calls.shift();
+        expect(call[0]).toEqual('birthday'); // field key
+        expect(call[1]).toEqual(expectedData);
+        expect(Store.getBirthday()).toEqual(expectedData);
     });
 });

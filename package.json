@@ -1,6 +1,6 @@
 {
   "name": "flux-factory",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Flux Action/Constant/Dispatcher/Store Factory",
   "homepage": "http://davidxi.github.io/flux-factory/",
   "bugs": {
@@ -36,6 +36,7 @@
   "dependencies": {
     "envify": "latest",
     "flux": "^2.0.1",
+    "immutable": "^3.6.4",
     "invariant": "^2.0.0",
     "keymirror": "^0.1.1",
     "object-assign": "^2.0.0"
