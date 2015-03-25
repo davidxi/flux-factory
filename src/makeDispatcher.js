@@ -2,8 +2,8 @@
  * @providesModule makeDispatcher
  */
 var assign = require('object-assign');
+var invariant = require('invariant');
 var keyMirror = require('keymirror');
-var Dispatcher = require('flux').Dispatcher;
 var utils = require('./utils');
 
 var cache = {};
@@ -17,10 +17,14 @@ function curryPayloadSource(source) {
     };
 }
 
-function makeDispatcher(config, cacheId) {
+function makeDispatcher(factory, config, cacheId) {
+    invariant(factory && config && cacheId, 'format check');
+
     if (cache[cacheId]) {
         return cache[cacheId];
     }
+    var Dispatcher = factory._deps.flux.Dispatcher;
+
     cache[cacheId] = assign(new Dispatcher(), {
         handleServerAction: curryPayloadSource(makeDispatcher.PayloadSources.SERVER_ACTION),
         handleViewAction: curryPayloadSource(makeDispatcher.PayloadSources.VIEW_ACTION)

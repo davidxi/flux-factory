@@ -2,7 +2,6 @@
  * @providesModule makeAction
  */
 var invariant = require('invariant');
-var Dispatcher = require('flux').Dispatcher;
 
 var makeConstant = require('./makeConstant');
 var makeDispatcher = require('./makeDispatcher');
@@ -10,7 +9,9 @@ var utils = require('./utils');
 
 var cache = {};
 
-function makeSetterMethod(dispatcher, actionType, payloadProps) {
+function makeSetterMethod(factory, dispatcher, actionType, payloadProps) {
+    var Dispatcher = factory._deps.flux.Dispatcher;
+
     invariant(dispatcher instanceof Dispatcher, 'format check');
     invariant(actionType, 'format check');
     invariant(Array.isArray(payloadProps), 'format check');
@@ -29,14 +30,16 @@ function makeSetterMethod(dispatcher, actionType, payloadProps) {
     };
 }
 
-function makeAction(config, cacheId) {
+function makeAction(factory, config, cacheId) {
+    invariant(factory && config && cacheId, 'format check');
+
     if (cache[cacheId]) {
         return cache[cacheId];
     }
 
     var actionMethods = {};
-    var constantAssociated = makeConstant(config, cacheId);
-    var dispatcherAssociated = makeDispatcher(config, cacheId);
+    var constantAssociated = makeConstant(factory, config, cacheId);
+    var dispatcherAssociated = makeDispatcher(factory, config, cacheId);
 
     Object.keys(config).forEach(function(_key) {
         var name = utils.getSetterMethodName(_key);
@@ -46,7 +49,7 @@ function makeAction(config, cacheId) {
         actionType = constantAssociated.ActionTypes[actionType];
 
         var actionMethodParams = config[_key];
-        actionMethods[name] = makeSetterMethod(dispatcherAssociated, actionType, actionMethodParams);
+        actionMethods[name] = makeSetterMethod(factory, dispatcherAssociated, actionType, actionMethodParams);
     });
 
     cache[cacheId] = actionMethods;

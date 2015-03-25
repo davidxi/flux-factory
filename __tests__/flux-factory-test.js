@@ -1,6 +1,7 @@
-jest.dontMock('../flux-factory');
-jest.dontMock('object-assign');
-jest.dontMock('keymirror');
+jest.autoMockOff();
+
+var flux = require.requireActual('flux');
+var immutable = require.requireActual('immutable');
 
 var Factory = require('../flux-factory');
 var assign = require('object-assign');
@@ -17,12 +18,32 @@ var allDataFields = {
 
 var fluxEntityName = 'UserProfile';
 
+function resetFactory() {
+    Factory.destructor();
+    Factory.init({
+        flux: flux,
+        immutable: immutable
+    });
+}
+
 /**
  * factory
  */
 describe('test factory core', function() {
-    beforeEach(function() {
-        Factory.destructor();
+    beforeEach(resetFactory);
+
+    it('dependencies check', function() {
+        Factory._deps = null;
+        expect(function() {
+            Factory.init({
+                flux: {},
+                immutable: {}
+            });
+        }).toThrow();
+        expect(function() {
+            var _allDataFields = assign({}, allDataFields);
+            Factory.make(fluxEntityName, allDataFields);
+        }).toThrow();
     });
 
     it('test make(config, entity)', function() {
@@ -50,6 +71,18 @@ describe('test factory core', function() {
         expect(Factory.useStore(dummyEntityName)).toBeUndefined();
     });
 
+    it('make(config mapping)', function() {
+        var dummyEntityName = fluxEntityName + '1';
+        var specs = {};
+        specs[dummyEntityName] = allDataFields;
+        specs[fluxEntityName] = allDataFields;
+        Factory.make(specs);
+        var Constant = Factory.useConstant(fluxEntityName);
+        var ConstantDummy = Factory.useConstant(dummyEntityName);
+        expect(Constant).not.toBe(ConstantDummy);
+        expect(Constant).toEqual(ConstantDummy);
+    });
+
     it('test destructor()', function() {
         Factory.make(fluxEntityName, allDataFields);
         Factory.destructor();
@@ -65,9 +98,7 @@ describe('test factory core', function() {
  * makeConstant
  */
 describe('test make constant', function() {
-    beforeEach(function() {
-        Factory.destructor();
-    });
+    beforeEach(resetFactory);
 
     it('assert constant keys', function() {
         Factory.make(fluxEntityName, allDataFields);
@@ -105,9 +136,7 @@ describe('test make constant', function() {
  * makeAction
  */
 describe('test make action', function() {
-    beforeEach(function() {
-        Factory.destructor();
-    });
+    beforeEach(resetFactory);
 
     it('assert action methods keys', function() {
         Factory.make(fluxEntityName, allDataFields);
@@ -142,9 +171,7 @@ describe('test make action', function() {
  * makeDispatcher
  */
 describe('test dispatcher', function() {
-    beforeEach(function() {
-        Factory.destructor();
-    });
+    beforeEach(resetFactory);
 
     it('assert values passed', function() {
         Factory.make(fluxEntityName, allDataFields);
@@ -172,9 +199,7 @@ describe('test dispatcher', function() {
  * pipeline
  */
 describe('test pipeline', function() {
-    beforeEach(function() {
-        Factory.destructor();
-    });
+    beforeEach(resetFactory);
 
     it('pineline', function() {
         Factory.make(fluxEntityName, allDataFields);

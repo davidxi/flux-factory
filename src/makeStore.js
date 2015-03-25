@@ -2,7 +2,7 @@
  * @providesModule makeStore
  */
 var assign = require('object-assign');
-var Immutable = require('immutable');
+var invariant = require('invariant');
 var EventEmitter = require('events').EventEmitter;
 
 var makeConstant = require('./makeConstant');
@@ -14,7 +14,11 @@ var CHANGE_EVENT = "change";
 var cache = {};
 var emptyFunc = function() {};
 
-function makeStore(config, cacheId) {
+function makeStore(factory, config, cacheId) {
+    invariant(factory && config && cacheId, 'format check');
+
+    var Immutable = factory._deps.immutable;
+
     if (cache[cacheId]) {
         return cache[cacheId];
     }
@@ -31,8 +35,8 @@ function makeStore(config, cacheId) {
         }
     });
 
-    var constantAssociated = makeConstant(config, cacheId);
-    var dispatcherAssociated = makeDispatcher(config, cacheId);
+    var constantAssociated = makeConstant(factory, config, cacheId);
+    var dispatcherAssociated = makeDispatcher(factory, config, cacheId);
 
     Store._dataFields = {};
 

@@ -1,4 +1,4 @@
-[![npm](https://img.shields.io/badge/npm-0.0.3-blue.svg)]()
+[![npm](https://img.shields.io/badge/npm-0.0.5-blue.svg)]()
 
 # flux-factory
 
@@ -26,6 +26,12 @@ So, is it possible that when we add or redeine a data field, we can utilize some
 
 With `flux-factory`, the answer is yes. Now, let's look at the following example.
 
+## Dependencies
+
+  * es5-shim  (if needed)
+  * flux
+  * immutable
+
 ## Usage
 
 
@@ -43,7 +49,16 @@ var allDataFields = {
 
 var fluxEntityName = 'UserProfile';
 
-fluxFactory(fluxEntityName, allDataFields);
+// initialize with dependencies libraries
+
+fluxFactory.init({
+    init: require('flux'),
+    immutable: require('immutable')
+});
+
+// generate action/dispatcher/store
+
+fluxFactory.make(fluxEntityName, allDataFields);
 
 // now let's try call an action, and listen to the change event from store.
 
@@ -131,7 +146,7 @@ So you can extend this generated store object by yourself, to implement those da
 /* action object auto generated */
 action = {
   updateProfileName: function(name),
-  updateBirthday: fucntion(year, month, day),
+  updateBirthday: function(year, month, day),
   updateGender: function(gender),
   ....
 }
@@ -146,7 +161,7 @@ And how to extend those generated action/constant/dispatcher/store object?
 
 ```js
 
-fluxFactory('UserProfile', {config mapping})
+fluxFactory.make('UserProfile', {config mapping})
 
 var action = fluxFactory.useAction('UserProfile');
 var constant = fluxFactory.useConstant('UserProfile');
@@ -157,7 +172,7 @@ var store = fluxFactory.useStore('UserProfile');
 And of course, you can also pass in a batched config mapping to created action/constant/dispatcher/store for multiple entities:
 
 ```js
-fluxFactory({
+fluxFactory.make({
   UserProfile: {mapping ...},
   Notifications: {mapping ...}
 });

@@ -1,6 +1,6 @@
 {
   "name": "flux-factory",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "description": "Flux Action/Constant/Dispatcher/Store Factory",
   "homepage": "http://davidxi.github.io/flux-factory/",
   "bugs": {
@@ -27,16 +27,17 @@
     "run-sequence": "^0.3.6",
     "streamqueue": "0.0.4",
     "through": "2.3.4",
-    "vinyl-source-stream": "^0.1.1"
+    "vinyl-source-stream": "^0.1.1",
+
+    "flux": "^2.0.1",
+    "immutable": "^3.6.4"
   },
   "scripts": {
     "pretest": "node ./node_modules/gulp/bin/gulp.js browserify",
     "test": "jest --i"
   },
   "dependencies": {
-    "envify": "latest",
-    "flux": "^2.0.1",
-    "immutable": "^3.6.4",
+    "envify": "^3.4.0",
     "invariant": "^2.0.0",
     "keymirror": "^0.1.1",
     "object-assign": "^2.0.0"

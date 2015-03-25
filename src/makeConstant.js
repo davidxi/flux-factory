@@ -7,7 +7,9 @@ var utils = require('./utils');
 
 var cache = {};
 
-function makeConstant(config, cacheId) {
+function makeConstant(factory, config, cacheId) {
+    invariant(factory && config && cacheId, 'format check');
+
     if (cache[cacheId]) {
         return cache[cacheId];
     }
