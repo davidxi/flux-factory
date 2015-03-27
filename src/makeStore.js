@@ -106,6 +106,20 @@ makeStore.getInstance = function(cacheId) {
     return cache[cacheId];
 };
 makeStore.destructor = function() {
+    Object.keys(cache).forEach(function(cacheId) {
+        var Store = makeStore.getInstance(cacheId);
+        var Dispatcher = makeDispatcher.getInstance(cacheId);
+        if (!Store || !Dispatcher) return;
+        if (Dispatcher && (typeof Dispatcher.unregister === 'function')) {
+            try {
+                Dispatcher.unregister(Store.dispatchToken);
+            } catch (e) {
+                // in case user overwrites 'Store.dispatchToken' (O.O),
+                // so that dispatcher's unregister() will throw an error due
+                // to the invalid token
+            }
+        }
+    });
     cache = {};
 };
 

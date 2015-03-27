@@ -65,8 +65,9 @@ fluxFactory.make(fluxEntityName, allDataFields);
 var Action = fluxFactory.useAction(fluxEntityName);
 var Store = fluxFactory.useStore(fluxEntityName);
 
-Store.addChangeListener(function() {
+Store.addChangeListener(function(dataFieldKey) {
     // usually, you can put this function in your react component
+    console.log('data changed on field: ' + dataField);
     console.log(Store.getBirthday());
 });
 
