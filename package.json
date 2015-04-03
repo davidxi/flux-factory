@@ -1,6 +1,6 @@
 {
   "name": "flux-factory",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Flux Action/Constant/Dispatcher/Store Factory",
   "homepage": "http://davidxi.github.io/flux-factory/",
   "bugs": {

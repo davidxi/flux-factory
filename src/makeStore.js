@@ -13,6 +13,7 @@ var CHANGE_EVENT = "change";
 
 var cache = {};
 var emptyFunc = function() {};
+var dispatcherTokens = {};
 
 function makeStore(factory, config, cacheId) {
     invariant(factory && config && cacheId, 'format check');
@@ -41,7 +42,9 @@ function makeStore(factory, config, cacheId) {
     Store._dataFields = {};
 
     Object.keys(config).forEach(function(_key) {
-        Store._dataFields[_key] = Immutable.fromJS({});
+        Store._dataFields[_key] = factory.isImmutableLibIncluded() ?
+                                    Immutable.fromJS({}) :
+                                    {};
         var setterMethodName = utils.getSetterMethodName(_key);
         Store[setterMethodName] = setterFuncFactory(_key);
         var getterMethodName = utils.getGetterMethodName(_key);
@@ -50,11 +53,20 @@ function makeStore(factory, config, cacheId) {
 
     function getterFuncFactory(field) {
         return function() {
-            return assign({}, Store._dataFields[field].toJSON());
+            var data = Store._dataFields[field];
+            factory.isImmutableLibIncluded() && (data = data.toJSON());
+            return assign({}, data);
         };
     }
     function setterFuncFactory(field) {
         return function(data) {
+            // mode 1: w/o immutable
+            if (!factory.isImmutableLibIncluded()) {
+                Store._dataFields[field] = data;
+                Store.emitChange(field, data);
+                return;
+            }
+            // mode 2: with immutable
             var current = Store._dataFields[field];
             var next = current.mergeDeep(Immutable.fromJS(data, function (key, value) {
                 var isIndexed = Immutable.Iterable.isIndexed(value);
@@ -95,6 +107,7 @@ function makeStore(factory, config, cacheId) {
     });
 
     Store.dispatchToken = dispatcherAssociated.register(onDispatcherPayload);
+    dispatcherTokens[cacheId] = Store.dispatchToken;
 
     utils.bindAll(Store);
 
@@ -106,18 +119,12 @@ makeStore.getInstance = function(cacheId) {
     return cache[cacheId];
 };
 makeStore.destructor = function() {
-    Object.keys(cache).forEach(function(cacheId) {
+    Object.keys(dispatcherTokens).forEach(function(cacheId) {
         var Store = makeStore.getInstance(cacheId);
         var Dispatcher = makeDispatcher.getInstance(cacheId);
         if (!Store || !Dispatcher) return;
         if (Dispatcher && (typeof Dispatcher.unregister === 'function')) {
-            try {
-                Dispatcher.unregister(Store.dispatchToken);
-            } catch (e) {
-                // in case user overwrites 'Store.dispatchToken' (O.O),
-                // so that dispatcher's unregister() will throw an error due
-                // to the invalid token
-            }
+            Dispatcher.unregister(dispatcherTokens[cacheId]);
         }
     });
     cache = {};

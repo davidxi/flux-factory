@@ -19,13 +19,21 @@ var factory = {
         invariant(module &&
             module.Dispatcher,
             'Require \'flux\' library. ' + str);
-        module = requires.immutable;
-        invariant(module &&
-            module.fromJS &&
-            module.Iterable,
-            'Require \'immutable\' library. ' + str);
+
+        // immutable.js is too big, so if the user intends to not to use immutable,
+        // we just set Store.setter/getter functions to be empty func
+        invariant('immutable' in requires, 'If you do not intend to require \'immutable\', please still set { immutable: null }');
+        // this invariant is to make the user aware of their choice of whether to
+        // include immutable.js
 
         factory._deps = assign({}, requires);
+    },
+    isImmutableLibIncluded: function() {
+        if (!factory._deps) return false;
+        var module = factory._deps.immutable;
+        return module &&
+                module.fromJS &&
+                module.Iterable;
     },
     /**
      * set up

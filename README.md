@@ -1,4 +1,4 @@
-[![npm](https://img.shields.io/badge/npm-0.0.5-blue.svg)]()
+[![npm](https://img.shields.io/badge/npm-0.0.6-blue.svg)]()
 
 # flux-factory
 
@@ -30,7 +30,7 @@ With `flux-factory`, the answer is yes. Now, let's look at the following example
 
   * es5-shim  (if needed)
   * flux
-  * immutable
+  * immutable (optional)
 
 ## Usage
 
@@ -53,7 +53,7 @@ var fluxEntityName = 'UserProfile';
 
 fluxFactory.init({
     init: require('flux'),
-    immutable: require('immutable')
+    immutable: null   // OR require('immutable')
 });
 
 // generate action/dispatcher/store
@@ -107,7 +107,8 @@ constant = {
 /* store object auto generated */
 store = assign(new EventEmitter, {
 
-	// invoked when data changes, if you didn't overwrite default setters
+	// invoked when data changes, if you didn't overwrite default setters.
+	// if you included 'immutable', it is only invoked when results has diff.
 	emitchange: {field_key},
 	addChangeListener: {handler},
 

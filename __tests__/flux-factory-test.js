@@ -41,6 +41,13 @@ describe('test factory core', function() {
             });
         }).toThrow();
         expect(function() {
+            Factory.init({
+                flux: flux,
+                immutable: null // optional
+            });
+        }).not.toThrow();
+        expect(function() {
+            Factory.destructor();
             var _allDataFields = assign({}, allDataFields);
             Factory.make(fluxEntityName, allDataFields);
         }).toThrow();
@@ -234,7 +241,7 @@ describe('test pipeline', function() {
         expect(Store.updateBirthday.mock.calls.shift()).toBeUndefined();
     });
 
-    it('store getter/setter', function() {
+    it('store getter/setter (with immutable lib)', function() {
         Factory.make(fluxEntityName, allDataFields);
         var Action = Factory.useAction(fluxEntityName);
         var Dispatcher = Factory.useDispatcher(fluxEntityName);
@@ -271,5 +278,44 @@ describe('test pipeline', function() {
         expect(call[0]).toEqual('birthday'); // field key
         expect(call[1]).toEqual(expectedData);
         expect(Store.getBirthday()).toEqual(expectedData);
+    });
+
+    it('store getter/setter (without immutable)', function() {
+        Factory.destructor();
+        Factory.init({
+            flux: flux,
+            immutable: null
+        });
+
+        Factory.make(fluxEntityName, allDataFields);
+        var Action = Factory.useAction(fluxEntityName);
+        var Dispatcher = Factory.useDispatcher(fluxEntityName);
+        var Store = Factory.useStore(fluxEntityName);
+
+        Store.emitChange = jest.genMockFunction();
+
+        // setter emits change
+        Action.updateBirthday('yy', 'mm', 'dd');
+        var expectedData = {
+            year: 'yy',
+            month: 'mm',
+            day: 'dd'
+        };
+        var call = Store.emitChange.mock.calls.shift();
+        expect(call[0]).toEqual('birthday'); // field key
+        expect(call[1]).toEqual(expectedData);
+        var result1 = Store.getBirthday();
+        expect(result1).toEqual(expectedData);
+
+        // set same data, emits change
+        Action.updateBirthday('yy', 'mm', 'dd');
+        call = Store.emitChange.mock.calls.shift();
+        expect(call[0]).toEqual('birthday'); // field key
+        expect(call[1]).toEqual(expectedData);
+        var result2 = Store.getBirthday();
+        expect(result2).toEqual(expectedData);
+
+        expect(result2).not.toBe(result1);
+        expect(result2).toEqual(result1);
     });
 });
